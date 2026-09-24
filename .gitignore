@@ -1,0 +1,16 @@
+# Never commit local config or secrets
+tokenonomics.env
+*.env
+!.env.example
+
+# Runtime state / real spend data
+state/
+*.json.tmp
+
+# Brand assets (fetch or create your own — see assets/README.md)
+assets/*.png
+assets/*.svg
+
+# macOS / editor noise
+.DS_Store
+*.swp

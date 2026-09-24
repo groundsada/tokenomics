@@ -1,0 +1,97 @@
+#!/bin/bash
+# vpnctl — one control for two VPNs (e.g. ESnet via Viscosity/OpenVPN, LBL via Cisco Secure Client).
+#
+# The two tunnels are mutually exclusive by design (the LBL profile is a FULL tunnel
+# that routes everything, breaking split-tunnel routes of the other). Swap is enforced.
+#
+# Usage: vpnctl status | esnet | lbl | both | off
+#   esnet  - connect the ESnet-style VPN (disconnects the other first)
+#   lbl    - connect the LBL/Cisco VPN (opens the Cisco client for MFA, disconnects the other first)
+#   both   - explains why it is NOT supported
+#   off    - disconnect everything
+#   status - show what's up
+#
+# Configuration: sibling file `tokenonomics.env` (see tokenonomics.env.example).
+#   TOK_DIR        project root
+#   VISC_CONNECTION_NAME   name of the Viscosity connection
+#   ESNET_PING_TARGET      IP used as the tunnel liveness probe
+#   CISCO_APP_PATH         path to the Cisco Secure Client app bundle
+#   CISCO_PROFILE          Cisco profile name (from `vpn hosts`)
+
+DIR="$(cd "$(dirname "$0")" && pwd)"
+ENV_FILE="${TOKENONOMICS_ENV:-$DIR/tokenonomics.env}"
+if [ -f "$ENV_FILE" ]; then
+  set -a; . "$ENV_FILE"; set +a
+fi
+
+TOK_DIR="${TOK_DIR:-$DIR}"
+CONN="${VISC_CONNECTION_NAME:-ESnet VPN (change me in tokenonomics.env)}"
+PING_TARGET="${ESNET_PING_TARGET:-10.0.0.1}"
+CISCO_APP="${CISCO_APP_PATH:-/Applications/Cisco/Cisco Secure Client.app}"
+CISCO_CLI="/opt/cisco/secureclient/bin/vpn"
+CISCO_PROFILE="${CISCO_PROFILE:-LBL-MFA-VPN}"
+
+esnet_up() { ping -c 1 -W 2 -q "$PING_TARGET" >/dev/null 2>&1; }
+
+function cis_state() {
+  "$CISCO_CLI" state 2>/dev/null | sed -n 's/.*>> state: //p' | grep -v '^$' | sort -u | tr '\n' ',' | sed 's/,$//'
+}
+
+function lbl_up() {
+  st=$(cis_state)
+  [[ "$st" == *"Connected"* ]]
+}
+
+case "$1" in
+  status)
+    echo "ESnet: $(esnet_up && echo CONNECTED || echo not connected)"
+    echo "LBL:   $(lbl_up && echo CONNECTED || echo not connected)"
+    ;;
+  esnet)
+    if lbl_up; then
+      echo "Disconnecting LBL VPN..."
+      "$CISCO_CLI" disconnect >/dev/null 2>&1
+      sleep 3
+    fi
+    if ! esnet_up; then
+      open -a Viscosity >/dev/null 2>&1
+      sleep 4
+      osascript -e "tell application \"Viscosity\" to connect \"$CONN\"" >/dev/null 2>&1
+      sleep 10
+    fi
+    echo "ESnet: $(esnet_up && echo CONNECTED || echo NOT connected — check Viscosity for a prompt)"
+    ;;
+  lbl)
+    if esnet_up; then
+      echo "Disconnecting ESnet VPN..."
+      osascript -e "tell application \"Viscosity\" to disconnect \"$CONN\"" >/dev/null 2>&1
+      sleep 5
+    fi
+    if ! lbl_up; then
+      # Non-interactive CLI; the GUI is needed for MFA (Duo/SAML), so open it.
+      open "$CISCO_APP" >/dev/null 2>&1
+      sleep 6
+      "$CISCO_CLI" connect "$CISCO_PROFILE" >/dev/null 2>&1 &
+      echo "LBL connect requested — Cisco window is open; authenticate with your credentials + MFA now."
+    fi
+    sleep 3
+    echo "LBL: $(lbl_up && echo CONNECTED || echo connecting — complete MFA in the Cisco window)"
+    ;;
+  both)
+    echo "NOT SUPPORTED: the LBL (AnyConnect) profile is a FULL tunnel and pushes its"
+    echo "protected routes through the same next-hop as the other tunnel; whichever"
+    echo "connects second breaks the first (verified both orderings). Use 'vpnctl esnet'"
+    echo "or 'vpnctl lbl' — the two are deliberately mutually exclusive."
+    exit 1
+    ;;
+  off)
+    "$CISCO_CLI" disconnect >/dev/null 2>&1
+    osascript -e "tell application \"Viscosity\" to disconnect \"$CONN\"" >/dev/null 2>&1
+    sleep 4
+    echo "ESnet: $(esnet_up && echo still up || echo down)"
+    echo "LBL:   $(lbl_up && echo still up || echo down)"
+    ;;
+  *)
+    echo "Usage: vpnctl status|esnet|lbl|both|off"; exit 1
+    ;;
+esac
