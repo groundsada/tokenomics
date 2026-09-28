@@ -1,5 +1,5 @@
 # Never commit local config or secrets
-tokenonomics.env
+tokenomics.env
 *.env
 !.env.example
 

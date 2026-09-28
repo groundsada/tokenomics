@@ -2,7 +2,7 @@
 """Gateway spend fetcher — reads Prometheus metrics from a LiteLLM-style gateway.
 
 Pulls <ES_BASE_URL>/metrics/ (public, no auth needed) and sums the spend counter
-series for the email configured in tokenonomics.env. Works for any gateway that
+series for the email configured in tokenomics.env. Works for any gateway that
 exposes the standard `litellm_spend_metric_total` series with a user_email label.
 
 The gateway counters only exist since the gateway process last started (they
@@ -20,7 +20,7 @@ reset on restart), but the month total is kept exact with a carry-forward:
 
 Runtime state is written to $TOK_STATE_DIR. Nothing here ships credentials: the
 metrics endpoint requires no auth, and the only personal input is your gateway
-email in tokenonomics.env.
+email in tokenomics.env.
 
 Usage: esnet_spend.py [--force]
 """
@@ -54,8 +54,8 @@ def load_env(path):
 
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-ENV_FILE = os.environ.get("TOKENONOMICS_ENV",
-                          os.path.join(SCRIPT_DIR, "..", "tokenonomics.env"))
+ENV_FILE = os.environ.get("TOKENOMICS_ENV",
+                          os.path.join(SCRIPT_DIR, "..", "tokenomics.env"))
 ENV = load_env(ENV_FILE)
 
 TOK_DIR = os.path.expanduser(ENV.get("TOK_DIR", os.path.join(SCRIPT_DIR, "..")))
@@ -125,7 +125,7 @@ def fetch_metrics(retries=3):
         try:
             req = urllib.request.Request(METRICS_URL, headers={
                 "Accept-Encoding": "gzip",
-                "User-Agent": "tokenonomics-spend/1.0",
+                "User-Agent": "tokenomics-spend/1.0",
             })
             with urllib.request.urlopen(req, timeout=45) as r:
                 raw = r.read()

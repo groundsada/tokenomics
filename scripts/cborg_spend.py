@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """CBorg-style gateway spend fetcher (key-level) — optional second source.
 
-Reads CBORG_API_KEY from tokenonomics.env and calls GET {CBORG_BASE_URL}/user/info.
+Reads CBORG_API_KEY from tokenomics.env and calls GET {CBORG_BASE_URL}/user/info.
 Results are cached to $TOK_STATE_DIR/cborg.json. Off-net or unauthenticated
 failures keep the last cached value (the widget labels it "(cached)").
 
@@ -30,8 +30,8 @@ def load_env(path):
 
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-ENV_FILE = os.environ.get("TOKENONOMICS_ENV",
-                          os.path.join(SCRIPT_DIR, "..", "tokenonomics.env"))
+ENV_FILE = os.environ.get("TOKENOMICS_ENV",
+                          os.path.join(SCRIPT_DIR, "..", "tokenomics.env"))
 ENV = load_env(ENV_FILE)
 
 TOK_DIR = os.path.expanduser(ENV.get("TOK_DIR", os.path.join(SCRIPT_DIR, "..")))
@@ -49,7 +49,7 @@ def main():
     try:
         req = urllib.request.Request(BASE + "/user/info", headers={
             "Authorization": "Bearer " + KEY,
-            "User-Agent": "tokenonomics/1.0",
+            "User-Agent": "tokenomics/1.0",
         })
         with urllib.request.urlopen(req, timeout=30) as r:
             data = json.loads(r.read().decode("utf-8"))

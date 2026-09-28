@@ -11,7 +11,7 @@
 #   off    - disconnect everything
 #   status - show what's up
 #
-# Configuration: sibling file `tokenonomics.env` (see tokenonomics.env.example).
+# Configuration: sibling file `tokenomics.env` (see tokenomics.env.example).
 #   TOK_DIR        project root
 #   VISC_CONNECTION_NAME   name of the Viscosity connection
 #   ESNET_PING_TARGET      IP used as the tunnel liveness probe
@@ -19,13 +19,13 @@
 #   CISCO_PROFILE          Cisco profile name (from `vpn hosts`)
 
 DIR="$(cd "$(dirname "$0")" && pwd)"
-ENV_FILE="${TOKENONOMICS_ENV:-$DIR/tokenonomics.env}"
+ENV_FILE="${TOKENOMICS_ENV:-$DIR/tokenomics.env}"
 if [ -f "$ENV_FILE" ]; then
   set -a; . "$ENV_FILE"; set +a
 fi
 
 TOK_DIR="${TOK_DIR:-$DIR}"
-CONN="${VISC_CONNECTION_NAME:-ESnet VPN (change me in tokenonomics.env)}"
+CONN="${VISC_CONNECTION_NAME:-ESnet VPN (change me in tokenomics.env)}"
 PING_TARGET="${ESNET_PING_TARGET:-10.0.0.1}"
 CISCO_APP="${CISCO_APP_PATH:-/Applications/Cisco/Cisco Secure Client.app}"
 CISCO_CLI="/opt/cisco/secureclient/bin/vpn"

@@ -1,12 +1,12 @@
---- tokenonomics.lua — VPN + spend menubar widget for Hammerspoon.
---- Load with:  require("tokenonomics")   (put this file in your Hammerspoon config dir)
---- Config lives in the sibling `tokenonomics.env` (see tokenonomics.env.example).
+--- tokenomics.lua — VPN + spend menubar widget for Hammerspoon.
+--- Load with:  require("tokenomics")   (put this file in your Hammerspoon config dir)
+--- Config lives in the sibling `tokenomics.env` (see tokenomics.env.example).
 --- This module contains NO machine-specific paths/values: everything comes from
 --- the env file. It does not include any keyboard shortcuts or other bindings.
 
 local M = {}
 
--- ---------- config (from tokenonomics.env) ----------
+-- ---------- config (from tokenomics.env) ----------
 local function loadEnv(path)
   local env = {}
   local f = io.open(path, "r")
@@ -26,24 +26,24 @@ end
 
 local thisDir = debug.getinfo(1, "S").source:match("^(.-)[^/]+$") or "./"
 
--- Config discovery: $TOKENONOMICS_ENV → next to this module → ~/Tokenonomics/.
+-- Config discovery: $TOKENOMICS_ENV → next to this module → ~/Tokenomics/.
 local function exists(p)
   local f = io.open(p, "r")
   if f then f:close() return true end
   return false
 end
-local envPath = os.getenv("TOKENONOMICS_ENV")
+local envPath = os.getenv("TOKENOMICS_ENV")
 if not (envPath and exists(envPath)) then
-  for _, p in ipairs({ thisDir .. "tokenonomics.env",
-                       (os.getenv("HOME") or "") .. "/Tokenonomics/tokenonomics.env" }) do
+  for _, p in ipairs({ thisDir .. "tokenomics.env",
+                       (os.getenv("HOME") or "") .. "/Tokenomics/tokenomics.env" }) do
     if exists(p) then envPath = p break end
   end
 end
 local env = loadEnv(envPath or "")
 if not envPath or next(env) == nil then
-  print("[tokenonomics] WARNING: tokenonomics.env not found — using built-in defaults. " ..
-        "Set TOKENONOMICS_ENV or place tokenonomics.env next to this module " ..
-        "(see tokenonomics.env.example).")
+  print("[tokenomics] WARNING: tokenomics.env not found — using built-in defaults. " ..
+        "Set TOKENOMICS_ENV or place tokenomics.env next to this module " ..
+        "(see tokenomics.env.example).")
 end
 local TOK_DIR     = env.TOK_DIR or (thisDir .. "..")
 local STATE_DIR   = env.TOK_STATE_DIR or (TOK_DIR .. "/state")
@@ -107,7 +107,7 @@ local menuRows          -- forward declaration (used by updateSnap / act below)
 local bar
 local snap = { esnet = false, lbl = false, es = 0, cb = nil, cbBudget = nil }
 if os.getenv("TOK_NO_BAR") ~= "1" then
-  bar = hs.menubar.new(true, "Tokenonomics…")
+  bar = hs.menubar.new(true, "Tokenomics…")
 end
 M.snap = snap
 
@@ -120,10 +120,10 @@ local function render()
   else
     up, mode, amt, logoPath = false, "esnet", fmtShort(snap.es), LOGO_ESNET
   end
-  async("'" .. MAKEBLOB .. "' " .. mode .. " " .. (up and "1" or "0") .. " '" .. amt .. "' /tmp/tokenonomics_blob.png '" .. logoPath .. "'",
+  async("'" .. MAKEBLOB .. "' " .. mode .. " " .. (up and "1" or "0") .. " '" .. amt .. "' /tmp/tokenomics_blob.png '" .. logoPath .. "'",
     function()
-      local im = hs.image.imageFromPath("/tmp/tokenonomics_blob.png")
-      pcall(function() bar:setIcon(im or "/tmp/tokenonomics_blob.png", false) end)
+      local im = hs.image.imageFromPath("/tmp/tokenomics_blob.png")
+      pcall(function() bar:setIcon(im or "/tmp/tokenomics_blob.png", false) end)
       bar:setTitle("")
     end)
 end

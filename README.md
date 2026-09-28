@@ -1,4 +1,4 @@
-# Tokenonomics
+# Tokenomics
 
 A macOS menu-bar widget (Hammerspoon) that shows your **VPN status and AI/API spend at a glance**, for the two networks you commonly sit behind:
 
@@ -25,10 +25,10 @@ Click the pill → menu with both rows; **each row is a one-click connect/discon
 ## Installation
 
 ```bash
-git clone https://github.com/<you>/tokenonomics.git ~/Tokenonomics
-cd ~/Tokenonomics
-cp tokenonomics.env.example tokenonomics.env
-$EDITOR tokenonomics.env            # fill in YOUR values (see below)
+git clone https://github.com/<you>/tokenomics.git ~/Tokenomics
+cd ~/Tokenomics
+cp tokenomics.env.example tokenomics.env
+$EDITOR tokenomics.env            # fill in YOUR values (see below)
 chmod +x scripts/vpnctl
 swiftc -O -o scripts/makeblob scripts/render_blob.swift
 # optional: drop your logo PNGs into assets/ (see assets/README.md)
@@ -38,43 +38,43 @@ Wire the widget into Hammerspoon:
 
 ```bash
 mkdir -p ~/.hammerspoon
-cp hammerspoon/tokenonomics.lua ~/.hammerspoon/tokenonomics.lua
+cp hammerspoon/tokenomics.lua ~/.hammerspoon/tokenomics.lua
 ```
 
 Add to your `~/.hammerspoon/init.lua`:
 
 ```lua
 hs.ipc.cliInstall()   -- enables `hs -c` / `hs -n` command-line control
-require("tokenonomics")
+require("tokenomics")
 ```
 
 Reload Hammerspoon (or run `hs -c "print('ready')"` to check the IPC listener is up first).
 
 ## Where your config file goes
 
-The module looks for `tokenonomics.env` in this order:
-1. `$TOKENONOMICS_ENV` (set it before `require`, e.g. in `init.lua` or your shell)
-2. Next to `tokenonomics.lua` in your Hammerspoon config dir
-3. `~/Tokenonomics/tokenonomics.env`
+The module looks for `tokenomics.env` in this order:
+1. `$TOKENOMICS_ENV` (set it before `require`, e.g. in `init.lua` or your shell)
+2. Next to `tokenomics.lua` in your Hammerspoon config dir
+3. `~/Tokenomics/tokenomics.env`
 
 Then adjust `TOK_DIR` inside it to the repo path (that is where the scripts live),
-or you can set `TOKENONOMICS_ENV=/Users/you/Tokenonomics/tokenonomics.env` in
+or you can set `TOKENOMICS_ENV=/Users/you/Tokenomics/tokenomics.env` in
 `~/.zshrc` and in your `init.lua` before the require. If nothing is found the
 module prints a clear warning to the Hammerspoon console instead of failing
 silently.
 
 ## Debugging
 
-- `hs -c "require('tokenonomics')"` — should not error (a second widget appears; fine to ignore)
-- `hs -c "print(hs.inspect(require('tokenonomics').snap))"` — current widget state
-- `hs -c "print(#require('tokenonomics').menuRows())"` — number of menu rows
+- `hs -c "require('tokenomics')"` — should not error (a second widget appears; fine to ignore)
+- `hs -c "print(hs.inspect(require('tokenomics').snap))"` — current widget state
+- `hs -c "print(#require('tokenomics').menuRows())"` — number of menu rows
 - The module returns a table — it never creates globals (that is why
   `hs.inspect(tokenomicsMenu)` gives `nil`; use the return value instead).
 - Without `hs.ipc.cliInstall()`, `hs -c` will not connect — this is expected behavior, not a bug.
 
 ## Configuration
 
-All instance-specific values live in `tokenonomics.env` (never committed). Key entries:
+All instance-specific values live in `tokenomics.env` (never committed). Key entries:
 
 | Key | Meaning |
 |---|---|
@@ -107,7 +107,7 @@ No credentials, no third-party services, no logs.
 - **Logos / brand assets** — see [assets/README.md](assets/README.md) for why and how to add your own.
 - **Any API keys or emails** — the config template has placeholders only.
 - **Your actual spend data** — `state/` is git-ignored.
-- **Laptop-specific paths** — everything stems from `tokenonomics.env`.
+- **Laptop-specific paths** — everything stems from `tokenomics.env`.
 
 ## License
 

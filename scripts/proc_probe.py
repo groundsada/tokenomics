@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """proc_probe.py - zero-LLM RAM/CPU snapshot + evidence verdict for the
-process menubar widget (hermes-agent + Tokenonomics style).
+process menubar widget (hermes-agent + Tokenomics style).
 
 Finds the process that actually holds memory (footprint INCLUDING compressed
 pages, which `ps`/Activity Monitor RSS hide), cross-checks CPU/idle/clients,
