@@ -25,7 +25,26 @@ local function loadEnv(path)
 end
 
 local thisDir = debug.getinfo(1, "S").source:match("^(.-)[^/]+$") or "./"
-local env = loadEnv(os.getenv("TOKENONOMICS_ENV") or (thisDir .. "tokenonomics.env"))
+
+-- Config discovery: $TOKENONOMICS_ENV → next to this module → ~/Tokenonomics/.
+local function exists(p)
+  local f = io.open(p, "r")
+  if f then f:close() return true end
+  return false
+end
+local envPath = os.getenv("TOKENONOMICS_ENV")
+if not (envPath and exists(envPath)) then
+  for _, p in ipairs({ thisDir .. "tokenonomics.env",
+                       (os.getenv("HOME") or "") .. "/Tokenonomics/tokenonomics.env" }) do
+    if exists(p) then envPath = p break end
+  end
+end
+local env = loadEnv(envPath or "")
+if not envPath or next(env) == nil then
+  print("[tokenonomics] WARNING: tokenonomics.env not found — using built-in defaults. " ..
+        "Set TOKENONOMICS_ENV or place tokenonomics.env next to this module " ..
+        "(see tokenonomics.env.example).")
+end
 local TOK_DIR     = env.TOK_DIR or (thisDir .. "..")
 local STATE_DIR   = env.TOK_STATE_DIR or (TOK_DIR .. "/state")
 local ASSETS_DIR  = env.TOK_ASSETS_DIR or (TOK_DIR .. "/assets")
@@ -84,8 +103,12 @@ local function fileJson(path)
 end
 
 -- ---------- widget ----------
+local menuRows          -- forward declaration (used by updateSnap / act below)
+local bar
 local snap = { esnet = false, lbl = false, es = 0, cb = nil, cbBudget = nil }
-local bar = hs.menubar.new(true, "Tokenonomics…")
+if os.getenv("TOK_NO_BAR") ~= "1" then
+  bar = hs.menubar.new(true, "Tokenonomics…")
+end
 M.snap = snap
 
 local function render()
@@ -149,7 +172,7 @@ local function act(cmd)
   end)
 end
 
-local function menuRows()
+menuRows = function()   -- defined late on purpose; forward-declared above
   local cbTxt = fmtMoney(snap.cb or 0)
   if snap.cbBudget then cbTxt = cbTxt .. " / " .. fmtMoney(snap.cbBudget) .. " mo" end
   if not snap.lbl then cbTxt = cbTxt .. " (cached)" end
@@ -191,9 +214,13 @@ local function menuRows()
 end
 
 -- ---------- start ----------
-bar:setMenu(function() local m = menuRows(); updateSnap(); refreshSpend(); return m end)
-hs.timer.new(15, function() updateSnap() end):start()
-hs.timer.new(60, function() refreshSpend() end):start()
-updateSnap()
+M.menuRows = menuRows  -- now the real function (debugging/tests)
+M.bar = bar
+if bar then
+  bar:setMenu(function() local m = menuRows(); updateSnap(); refreshSpend(); return m end)
+  hs.timer.new(15, function() updateSnap() end):start()
+  hs.timer.new(60, function() refreshSpend() end):start()
+  updateSnap()
+end
 
 return M

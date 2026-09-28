@@ -44,10 +44,33 @@ cp hammerspoon/tokenonomics.lua ~/.hammerspoon/tokenonomics.lua
 Add to your `~/.hammerspoon/init.lua`:
 
 ```lua
+hs.ipc.cliInstall()   -- enables `hs -c` / `hs -n` command-line control
 require("tokenonomics")
 ```
 
-Reload Hammerspoon (or run `hs -c "require('tokenonomics')"` to test first).
+Reload Hammerspoon (or run `hs -c "print('ready')"` to check the IPC listener is up first).
+
+## Where your config file goes
+
+The module looks for `tokenonomics.env` in this order:
+1. `$TOKENONOMICS_ENV` (set it before `require`, e.g. in `init.lua` or your shell)
+2. Next to `tokenonomics.lua` in your Hammerspoon config dir
+3. `~/Tokenonomics/tokenonomics.env`
+
+Then adjust `TOK_DIR` inside it to the repo path (that is where the scripts live),
+or you can set `TOKENONOMICS_ENV=/Users/you/Tokenonomics/tokenonomics.env` in
+`~/.zshrc` and in your `init.lua` before the require. If nothing is found the
+module prints a clear warning to the Hammerspoon console instead of failing
+silently.
+
+## Debugging
+
+- `hs -c "require('tokenonomics')"` — should not error (a second widget appears; fine to ignore)
+- `hs -c "print(hs.inspect(require('tokenonomics').snap))"` — current widget state
+- `hs -c "print(#require('tokenonomics').menuRows())"` — number of menu rows
+- The module returns a table — it never creates globals (that is why
+  `hs.inspect(tokenomicsMenu)` gives `nil`; use the return value instead).
+- Without `hs.ipc.cliInstall()`, `hs -c` will not connect — this is expected behavior, not a bug.
 
 ## Configuration
 
